@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyMind | Elite AI Study Companion</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen active">
+        <div class="login-wrapper">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="logo-box">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <h1>StudyMind</h1>
+                    <p>Your elite AI study companion</p>
+                </div>
+                
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">IDENTITY TAG</label>
+                        <input type="text" id="username" placeholder="Enter your academic name..." required autocomplete="off">
+                    </div>
+                    
+                    <button type="submit" class="btn-gradient w-full" style="margin-bottom: 2rem;">
+                        Enter Study Session <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </form>
+
+                <div class="auth-text-bottom">
+                    <span>AUTHORIZED ACCESS ONLY</span>
+                    <div class="auth-dots">
+                        <span class="dot"></span>
+                        <span class="dot active"></span>
+                        <span class="dot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            © 2024 STUDYMIND INTELLECTUAL SYSTEMS
+        </div>
+    </div>
+
+    <!-- Main Chat Application -->
+    <div id="chat-app" class="screen">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <div class="brand">
+                    <h2 class="gradient-text-logo">StudyMind</h2>
+                    <p>AI INTELLECTUAL PARTNER</p>
+                </div>
+                
+                <button id="new-chat-btn" class="btn-gradient w-full sidebar-btn">
+                    <i class="fa-solid fa-plus"></i> New Study Session
+                </button>
+                
+                <nav class="main-nav">
+                    <div class="nav-section-title">MAIN NAVIGATION</div>
+                    <ul>
+                        <li id="nav-dashboard" class="active"><a href="#"><i class="fa-solid fa-table-cells-large"></i> Dashboard</a></li>
+                        <li id="nav-library"><a href="#"><i class="fa-solid fa-book-open"></i> Library</a></li>
+                        <li id="nav-sessions"><a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Sessions</a></li>
+                        <li id="nav-insights"><a href="#"><i class="fa-solid fa-chart-simple"></i> Insights</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="recent-sessions">
+                    <div class="nav-section-title">RECENT SESSIONS</div>
+                    <ul id="chat-history-list">
+                        <!-- Chat history items injected here -->
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="sidebar-bottom">
+                <div class="user-profile">
+                    <div class="avatar-info">
+                        <div class="user-avatar-img">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div class="user-details">
+                            <span id="display-name" class="user-name">Alex Chen</span>
+                            <span class="user-badge">Premium Scholar</span>
+                        </div>
+                    </div>
+                    <button id="logout-btn" class="logout-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+                </div>
+                <div class="help-link">
+                    <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <h2 id="current-chat-title">Advanced Particle Physics</h2>
+                    <span class="live-badge">LIVE SESSION</span>
+                </div>
+                <div class="header-right">
+                    <button class="icon-btn"><i class="fa-solid fa-share-nodes"></i></button>
+                    <button class="icon-btn"><i class="fa-solid fa-gear"></i></button>
+                    <button class="icon-btn mobile-menu-btn" id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+            </header>
+
+            <div id="chat-messages" class="chat-area">
+                <!-- Messages go here -->
+                
+                <!-- Welcome View -->
+                <div id="welcome-view" class="welcome-container">
+                    <div class="welcome-icon">
+                        <i class="fa-solid fa-bolt-lightning"></i>
+                    </div>
+                    <h1>Ready to learn, <span id="welcome-name">Alex</span>?</h1>
+                    <p>I've analyzed your upcoming exam syllabus. Where should we begin?</p>
+                    
+                    <div class="suggestion-grid">
+                        <div class="suggestion-card" onclick="submitSuggestion('Explain Quantum Mechanics')">
+                            <div class="s-icon text-purple"><i class="fa-solid fa-flask"></i></div>
+                            <h3>Explain Quantum Mechanics</h3>
+                            <p>Simplify the core principles of wave-particle duality.</p>
+                        </div>
+                        <div class="suggestion-card" onclick="submitSuggestion('Quiz me on History')">
+                            <div class="s-icon text-blue"><i class="fa-solid fa-clipboard-question"></i></div>
+                            <h3>Quiz me on History</h3>
+                            <p>Focus on the industrial revolution timeline.</p>
+                        </div>
+                        <div class="suggestion-card" onclick="submitSuggestion('Summarize Readings')">
+                            <div class="s-icon text-pink"><i class="fa-solid fa-pen-nib"></i></div>
+                            <h3>Summarize Readings</h3>
+                            <p>Paste a long text for an instant executive summary.</p>
+                        </div>
+                        <div class="suggestion-card" onclick="submitSuggestion('Data Analysis')">
+                            <div class="s-icon text-cyan"><i class="fa-solid fa-chart-line"></i></div>
+                            <h3>Data Analysis</h3>
+                            <p>Upload a dataset for complex trend visualization.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Library View -->
+            <div id="library-view" class="app-view" style="display: none;">
+                <div class="view-header">
+                    <h3>Your Saved Materials</h3>
+                    <button class="btn-gradient" style="padding: 0.5rem 1rem; font-size: 0.8rem;"><i class="fa-solid fa-upload"></i> Upload</button>
+                </div>
+                <div class="empty-state">
+                    <i class="fa-solid fa-folder-open" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                    <p>Your library is currently empty.</p>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Saved PDFs, notes, and study guides will appear here.</span>
+                </div>
+            </div>
+
+            <!-- Sessions View -->
+            <div id="sessions-view" class="app-view" style="display: none;">
+                <div class="view-header">
+                    <h3>All Study Sessions</h3>
+                </div>
+                <div id="all-sessions-list" class="sessions-grid">
+                    <!-- Sessions will be populated here by JS -->
+                </div>
+            </div>
+
+            <!-- Insights View -->
+            <div id="insights-view" class="app-view" style="display: none;">
+                <div class="view-header">
+                    <h3>Learning Analytics</h3>
+                </div>
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <div class="insight-title">Hours Studied</div>
+                        <div class="insight-value">12.5 <span style="font-size: 0.8rem; color: var(--text-muted);">hrs</span></div>
+                        <div class="insight-trend text-green"><i class="fa-solid fa-arrow-trend-up"></i> +2.1 hrs this week</div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-title">Topics Mastered</div>
+                        <div class="insight-value">8</div>
+                        <div class="insight-trend text-purple"><i class="fa-solid fa-brain"></i> Keep it up!</div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-title">Questions Asked</div>
+                        <div class="insight-value">142</div>
+                        <div class="insight-trend text-blue"><i class="fa-solid fa-comment-dots"></i> Highly engaged</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Input Area -->
+            <div class="input-wrapper">
+                <form id="chat-form">
+                    <div id="attachment-preview" class="attachment-pill" style="display: none;">
+                        <i class="fa-regular fa-file"></i>
+                        <span id="attachment-name">lecture_notes.pdf</span>
+                        <button type="button" id="remove-file-btn"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    
+                    <div class="input-box">
+                        <button type="button" id="attach-btn" class="attach-icon">
+                            <i class="fa-solid fa-paperclip"></i>
+                        </button>
+                        <input type="file" id="file-upload" accept="image/*,.pdf,.txt,.csv,.md" style="display: none;">
+                        
+                        <textarea id="message-input" rows="1" placeholder="Ask StudyMind anything..." autofocus></textarea>
+                        
+                        <button type="submit" id="send-btn" class="send-btn" disabled>
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="disclaimer">
+                    StudyMind AI can make mistakes. Verify critical facts. • <a href="#">Learning Privacy Enabled</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
