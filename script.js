@@ -452,32 +452,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- API Integration ---
     async function fetchAIResponse(chat, fileToUpload = null) {
-        if (!apiKey) {
-            removeTypingIndicator();
-            appendMessageUI('ai', `**Error:** Gemini API key is missing. Please click the gear icon <i class="fa-solid fa-gear"></i> in the top-right header to configure your Gemini API Key. You can get a free key from [Google AI Studio](https://aistudio.google.com/).`);
-            const lastUserMsg = chat.messages[chat.messages.length-1];
-            if (lastUserMsg && lastUserMsg.text) {
-                messageInput.value = lastUserMsg.text; 
-            }
-            chat.messages.pop(); 
-            saveState();
-            messageInput.dispatchEvent(new Event('input'));
-            return;
-        }
-
         appendTypingIndicator();
         
+        const useProxy = !apiKey;
         let fileUri = null;
+
         if (fileToUpload) {
             try {
-                const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=media&key=${apiKey}`;
+                const uploadUrl = useProxy 
+                    ? `/api/upload` 
+                    : `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=media&key=${apiKey}`;
+                
                 const fileResp = await fetch(uploadUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': fileToUpload.type || 'application/octet-stream' },
                     body: fileToUpload
                 });
                 
-                if (!fileResp.ok) throw new Error("Failed to upload file to AI");
+                if (!fileResp.ok) {
+                    if (useProxy && fileResp.status === 404) {
+                        throw new Error("Local environment detected. Please click the gear icon to set your Gemini API key for local testing.");
+                    }
+                    throw new Error("Failed to upload file to AI");
+                }
                 const fileDataObj = await fileResp.json();
                 fileUri = fileDataObj.file.uri;
                 
@@ -492,7 +489,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+        const endpoint = useProxy
+            ? `/api/chat`
+            : `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
         
         const contents = chat.messages.map(msg => {
             const parts = [];
@@ -524,7 +523,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
+                if (useProxy && response.status === 404) {
+                    throw new Error("Local environment detected. Please click the gear icon in the top-right header to configure your Gemini API key for local testing.");
+                }
+                const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error?.message || "API Request Failed");
             }
 
@@ -546,7 +548,7 @@ document.addEventListener('DOMContentLoaded', () => {
             appendMessageUI('ai', errorMsg);
             
             const lastUserMsg = chat.messages[chat.messages.length-1];
-            if (lastUserMsg.text) {
+            if (lastUserMsg && lastUserMsg.text) {
                 messageInput.value = lastUserMsg.text; 
             }
             chat.messages.pop(); 
