@@ -38,11 +38,20 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const sidebar = document.querySelector('.sidebar');
+    
+    // Settings elements
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsModal = document.getElementById('settings-modal');
+    const closeSettingsBtn = document.getElementById('close-settings-btn');
+    const saveSettingsBtn = document.getElementById('save-settings-btn');
+    const settingsUsernameInput = document.getElementById('settings-username');
+    const settingsApiKeyInput = document.getElementById('settings-api-key');
+    const loginApiKeyInput = document.getElementById('login-api-key');
 
     let selectedFile = null;
 
     // --- State ---
-    const API_KEY = "AIzaSyC6qf0pAPcSWoAuHoj97gBi22To0tB8sJE"; 
+    let apiKey = localStorage.getItem('studyMindApiKey') || '';
     let currentUser = localStorage.getItem('studyMindUserV3');
     let chats = JSON.parse(localStorage.getItem('studyMindDataV3')) || {};
     let currentChatId = null;
@@ -61,6 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function showLoginScreen() {
         loginScreen.classList.add('active');
         chatApp.classList.remove('active');
+        if (currentUser) usernameInput.value = currentUser;
+        if (apiKey) loginApiKeyInput.value = apiKey;
         usernameInput.focus();
     }
 
@@ -81,15 +92,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         switchView('dashboard');
+
+        // Automatically prompt for API Key if not set
+        if (!apiKey) {
+            setTimeout(openSettings, 500);
+        }
     }
 
     // --- Authentication ---
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const name = usernameInput.value.trim();
+        const key = loginApiKeyInput.value.trim();
         if (name) {
             currentUser = name;
             localStorage.setItem('studyMindUserV3', name);
+            if (key) {
+                apiKey = key;
+                localStorage.setItem('studyMindApiKey', key);
+            }
             showChatApp();
         }
     });
@@ -431,12 +452,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- API Integration ---
     async function fetchAIResponse(chat, fileToUpload = null) {
+        if (!apiKey) {
+            removeTypingIndicator();
+            appendMessageUI('ai', `**Error:** Gemini API key is missing. Please click the gear icon <i class="fa-solid fa-gear"></i> in the top-right header to configure your Gemini API Key. You can get a free key from [Google AI Studio](https://aistudio.google.com/).`);
+            const lastUserMsg = chat.messages[chat.messages.length-1];
+            if (lastUserMsg && lastUserMsg.text) {
+                messageInput.value = lastUserMsg.text; 
+            }
+            chat.messages.pop(); 
+            saveState();
+            messageInput.dispatchEvent(new Event('input'));
+            return;
+        }
+
         appendTypingIndicator();
         
         let fileUri = null;
         if (fileToUpload) {
             try {
-                const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=media&key=${API_KEY}`;
+                const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=media&key=${apiKey}`;
                 const fileResp = await fetch(uploadUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': fileToUpload.type || 'application/octet-stream' },
@@ -458,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${API_KEY}`;
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
         
         const contents = chat.messages.map(msg => {
             const parts = [];
@@ -532,6 +566,71 @@ document.addEventListener('DOMContentLoaded', () => {
             !sidebar.contains(e.target) && 
             !mobileMenuBtn.contains(e.target)) {
             sidebar.classList.remove('open');
+        }
+    });
+
+    // --- Settings Modal Logic ---
+    function openSettings() {
+        settingsUsernameInput.value = currentUser || '';
+        settingsApiKeyInput.value = apiKey || '';
+        settingsModal.style.display = 'flex';
+        setTimeout(() => {
+            settingsModal.classList.add('active');
+        }, 10);
+    }
+
+    function closeSettings() {
+        settingsModal.classList.remove('active');
+        setTimeout(() => {
+            settingsModal.style.display = 'none';
+        }, 300);
+    }
+
+    function saveSettings() {
+        const newUsername = settingsUsernameInput.value.trim();
+        const newApiKey = settingsApiKeyInput.value.trim();
+
+        if (!newUsername) {
+            alert("Please enter a valid scholar name.");
+            return;
+        }
+
+        currentUser = newUsername;
+        localStorage.setItem('studyMindUserV3', newUsername);
+        displayName.textContent = currentUser;
+        if(welcomeName) welcomeName.textContent = currentUser;
+
+        apiKey = newApiKey;
+        localStorage.setItem('studyMindApiKey', newApiKey);
+
+        closeSettings();
+    }
+
+    // Toggle Password/API Key visibility
+    document.querySelectorAll('.toggle-visibility-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            const inputEl = document.getElementById(targetId);
+            const iconEl = btn.querySelector('i');
+            
+            if (inputEl.type === 'password') {
+                inputEl.type = 'text';
+                iconEl.className = 'fa-regular fa-eye-slash';
+            } else {
+                inputEl.type = 'password';
+                iconEl.className = 'fa-regular fa-eye';
+            }
+        });
+    });
+
+    if (settingsBtn) settingsBtn.addEventListener('click', openSettings);
+    if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettings);
+    if (saveSettingsBtn) saveSettingsBtn.addEventListener('click', saveSettings);
+
+    // Close modal when clicking outside card
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+            closeSettings();
         }
     });
 });

@@ -27,6 +27,18 @@
                         <label for="username">IDENTITY TAG</label>
                         <input type="text" id="username" placeholder="Enter your academic name..." required autocomplete="off">
                     </div>
+                    <div class="form-group">
+                        <label for="login-api-key">GEMINI API KEY</label>
+                        <div class="input-with-icon">
+                            <input type="password" id="login-api-key" placeholder="Enter your Gemini API key..." autocomplete="off">
+                            <button type="button" class="toggle-visibility-btn" data-target="login-api-key">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                        <span class="input-helper">
+                            Get a free key from <a href="https://aistudio.google.com/" target="_blank" style="text-decoration: underline; color: #a855f7;">Google AI Studio</a>.
+                        </span>
+                    </div>
                     
                     <button type="submit" class="btn-gradient w-full" style="margin-bottom: 2rem;">
                         Enter Study Session <i class="fa-solid fa-arrow-right"></i>
@@ -109,7 +121,7 @@
                 </div>
                 <div class="header-right">
                     <button class="icon-btn"><i class="fa-solid fa-share-nodes"></i></button>
-                    <button class="icon-btn"><i class="fa-solid fa-gear"></i></button>
+                    <button class="icon-btn" id="settings-btn" title="System Settings"><i class="fa-solid fa-gear"></i></button>
                     <button class="icon-btn mobile-menu-btn" id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
                 </div>
             </header>
@@ -225,6 +237,37 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-gear"></i> System Settings</h3>
+                <button id="close-settings-btn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="settings-username">SCHOLAR NAME</label>
+                    <input type="text" id="settings-username" autocomplete="off" placeholder="Enter academic name...">
+                </div>
+                <div class="form-group">
+                    <label for="settings-api-key">GEMINI API KEY</label>
+                    <div class="input-with-icon">
+                        <input type="password" id="settings-api-key" placeholder="Enter your Gemini API key...">
+                        <button type="button" class="toggle-visibility-btn" data-target="settings-api-key">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+                    <span class="input-helper">
+                        Get a free key from <a href="https://aistudio.google.com/" target="_blank" style="text-decoration: underline; color: #a855f7;">Google AI Studio</a>.
+                    </span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-settings-btn" class="btn-gradient w-full">Save Changes</button>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
