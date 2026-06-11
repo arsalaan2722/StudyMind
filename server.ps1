@@ -1,3 +1,6 @@
+# Set security protocols to TLS 1.2 and TLS 1.3
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12 -bor [System.Net.SecurityProtocolType]::Tls13
+
 $port = 8000
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$port/")
@@ -72,7 +75,7 @@ try {
                     $requestBody = $reader.ReadToEnd()
                     $reader.Close()
 
-                    $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$apiKey"
+                    $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey"
                     try {
                         $httpWebRequest = [System.Net.HttpWebRequest]::Create($endpoint)
                         $httpWebRequest.Method = "POST"
@@ -122,7 +125,8 @@ try {
                             $ex.Response.Close()
                         }
                         
-                        if ($response.ContentType -eq "application/json") {
+                        Write-Host "[ERROR] api/chat error: $errMsg"
+                        if ($response.ContentType -like "*application/json*") {
                             $buffer = [System.Text.Encoding]::UTF8.GetBytes($errMsg)
                         } else {
                             $errJson = @{ error = @{ message = $errMsg } } | ConvertTo-Json
@@ -209,7 +213,8 @@ try {
                             $ex.Response.Close()
                         }
                         
-                        if ($response.ContentType -eq "application/json") {
+                        Write-Host "[ERROR] api/upload error: $errMsg"
+                        if ($response.ContentType -like "*application/json*") {
                             $buffer = [System.Text.Encoding]::UTF8.GetBytes($errMsg)
                         } else {
                             $errJson = @{ error = @{ message = $errMsg } } | ConvertTo-Json
