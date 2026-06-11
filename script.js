@@ -45,8 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeSettingsBtn = document.getElementById('close-settings-btn');
     const saveSettingsBtn = document.getElementById('save-settings-btn');
     const settingsUsernameInput = document.getElementById('settings-username');
-    const settingsApiKeyInput = document.getElementById('settings-api-key');
-    const loginApiKeyInput = document.getElementById('login-api-key');
 
     let selectedFile = null;
 
