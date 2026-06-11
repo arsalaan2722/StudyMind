@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedFile = null;
 
     // --- State ---
-    let apiKey = localStorage.getItem('studyMindApiKey') || '';
+    // API key is now handled server-side only — never stored or used in the browser
     let currentUser = localStorage.getItem('studyMindUserV3');
     let chats = JSON.parse(localStorage.getItem('studyMindDataV3')) || {};
     let currentChatId = null;
@@ -71,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loginScreen.classList.add('active');
         chatApp.classList.remove('active');
         if (currentUser) usernameInput.value = currentUser;
-        if (apiKey) loginApiKeyInput.value = apiKey;
         usernameInput.focus();
     }
 
@@ -92,25 +91,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         switchView('dashboard');
-
-        // Automatically prompt for API Key if not set
-        if (!apiKey) {
-            setTimeout(openSettings, 500);
-        }
     }
 
     // --- Authentication ---
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const name = usernameInput.value.trim();
-        const key = loginApiKeyInput.value.trim();
         if (name) {
             currentUser = name;
             localStorage.setItem('studyMindUserV3', name);
-            if (key) {
-                apiKey = key;
-                localStorage.setItem('studyMindApiKey', key);
-            }
             showChatApp();
         }
     });
@@ -451,28 +440,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- API Integration ---
+    // All requests go through the backend proxy — the API key is NEVER exposed in the browser
     async function fetchAIResponse(chat, fileToUpload = null) {
         appendTypingIndicator();
         
-        const useProxy = !apiKey;
         let fileUri = null;
 
         if (fileToUpload) {
             try {
-                const uploadUrl = useProxy 
-                    ? `/api/upload` 
-                    : `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=media&key=${apiKey}`;
-                
-                const fileResp = await fetch(uploadUrl, {
+                const fileResp = await fetch(`/api/upload`, {
                     method: 'POST',
                     headers: { 'Content-Type': fileToUpload.type || 'application/octet-stream' },
                     body: fileToUpload
                 });
                 
                 if (!fileResp.ok) {
-                    if (useProxy && fileResp.status === 404) {
-                        throw new Error("Local environment detected. Please click the gear icon to set your Gemini API key for local testing.");
-                    }
                     throw new Error("Failed to upload file to AI");
                 }
                 const fileDataObj = await fileResp.json();
@@ -489,10 +471,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const endpoint = useProxy
-            ? `/api/chat`
-            : `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
-        
         const contents = chat.messages.map(msg => {
             const parts = [];
             if (msg.fileUri) {
@@ -512,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const systemInstruction = "You are StudyMind, an elite AI study companion. Provide clear, highly structured, and encouraging responses. Use markdown formatting beautifully (headers, lists, bold text).";
 
         try {
-            const response = await fetch(endpoint, {
+            const response = await fetch(`/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -523,9 +501,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!response.ok) {
-                if (useProxy && response.status === 404) {
-                    throw new Error("Local environment detected. Please click the gear icon in the top-right header to configure your Gemini API key for local testing.");
-                }
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error?.message || "API Request Failed");
             }
@@ -574,7 +549,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Settings Modal Logic ---
     function openSettings() {
         settingsUsernameInput.value = currentUser || '';
-        settingsApiKeyInput.value = apiKey || '';
         settingsModal.style.display = 'flex';
         setTimeout(() => {
             settingsModal.classList.add('active');
@@ -590,7 +564,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveSettings() {
         const newUsername = settingsUsernameInput.value.trim();
-        const newApiKey = settingsApiKeyInput.value.trim();
 
         if (!newUsername) {
             alert("Please enter a valid scholar name.");
@@ -601,9 +574,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('studyMindUserV3', newUsername);
         displayName.textContent = currentUser;
         if(welcomeName) welcomeName.textContent = currentUser;
-
-        apiKey = newApiKey;
-        localStorage.setItem('studyMindApiKey', newApiKey);
 
         closeSettings();
     }
