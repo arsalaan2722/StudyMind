@@ -55,11 +55,22 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentUser = localStorage.getItem('studyMindUserV3');
     let chats = JSON.parse(localStorage.getItem('studyMindDataV3')) || {};
     let currentChatId = null;
+    let serverHasKey = false;
 
     // --- Initialization ---
     init();
 
-    function init() {
+    async function init() {
+        try {
+            const configResp = await fetch('/api/config');
+            if (configResp.ok) {
+                const configData = await configResp.json();
+                serverHasKey = !!configData.hasApiKey;
+            }
+        } catch (e) {
+            console.warn("Could not reach backend configuration:", e);
+        }
+
         if (currentUser) {
             showChatApp();
         } else {
@@ -91,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         switchView('dashboard');
+
     }
 
     // --- Authentication ---
@@ -455,7 +467,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 if (!fileResp.ok) {
-                    throw new Error("Failed to upload file to AI");
+                    let errMsg = "Failed to upload file to AI";
+                    try {
+                        const errorData = await fileResp.json();
+                        if (errorData.error && errorData.error.message) {
+                            errMsg = errorData.error.message;
+                        }
+                    } catch (jsonErr) {}
+                    throw new Error(errMsg);
                 }
                 const fileDataObj = await fileResp.json();
                 fileUri = fileDataObj.file.uri;
